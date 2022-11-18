@@ -1,9 +1,9 @@
 # switch
 
-```
+```shell
 git clone https://github.com/knarkzel/switch
 cd zig-switch
-nix develop
+nix develop # or nix-shell
 zig build run
 ```
 
