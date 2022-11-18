@@ -1,6 +1,6 @@
 # switch
 
-```shell
+```
 git clone https://github.com/knarkzel/switch
 cd switch
 nix-shell
