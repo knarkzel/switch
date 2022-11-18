@@ -5,12 +5,17 @@
       url = "github:knarkzel/devkitnix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    flake-compat = {
+      url = "github:edolstra/flake-compat";
+      flake = false;
+    };
   };
 
   outputs = {
     self,
     nixpkgs,
     devkitnix,
+    flake-compat,
   }: let
     pkgs = import nixpkgs {system = "x86_64-linux";};
     devkitA64 = devkitnix.packages.x86_64-linux.devkitA64;
