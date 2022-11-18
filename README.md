@@ -3,8 +3,8 @@
 ```shell
 git clone https://github.com/knarkzel/switch
 cd switch
-nix develop # or nix-shell
-zig build run
+nix-shell
+zig build
 ```
 
 ## Resources
