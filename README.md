@@ -2,7 +2,7 @@
 
 ```shell
 git clone https://github.com/knarkzel/switch
-cd zig-switch
+cd switch
 nix develop # or nix-shell
 zig build run
 ```
