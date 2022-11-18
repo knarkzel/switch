@@ -1,46 +1,44 @@
 const std = @import("std");
-const builtin = @import("builtin");
-
-const name = "switch";
-const flags = .{"-lnx"};
-const devkitpro = "result";
 
 pub fn build(b: *std.build.Builder) void {
-    const mode = b.standardReleaseOptions();
+    const name = "switch";
+    const libc = std.os.getenv("LIBC") orelse @panic("Make sure to set LIBC");
+    const devkitpro = std.os.getenv("DEVKITPRO") orelse @panic("Make sure to set DEVKITPRO");
 
     const obj = b.addObject(name, "src/main.zig");
     obj.linkLibC();
-    obj.setLibCFile(std.build.FileSource{ .path = "libc.txt" });
-    obj.addIncludeDir(devkitpro ++ "/libnx/include");
-    obj.addIncludeDir(devkitpro ++ "/portlibs/switch/include");
+    obj.setOutputDir("zig-out");
+    obj.setLibCFile(std.build.FileSource{ .path = libc });
+    obj.addIncludeDir(b.fmt("{s}/libnx/include", .{devkitpro}));
+    obj.addIncludeDir(b.fmt("{s}/portlibs/switch/include", .{devkitpro}));
     obj.setTarget(.{
         .cpu_arch = .aarch64,
         .os_tag = .freestanding,
         .cpu_model = .{ .explicit = &std.Target.aarch64.cpu.cortex_a57 },
     });
-    obj.setBuildMode(mode);
+    obj.setBuildMode(b.standardReleaseOptions());
 
     const elf = b.addSystemCommand(&(.{
-        devkitpro ++ "/devkitA64/bin/aarch64-none-elf-gcc",
+        b.fmt("{s}/devkitA64/bin/aarch64-none-elf-gcc", .{devkitpro}),
         "-g",
         "-march=armv8-a+crc+crypto",
         "-mtune=cortex-a57",
         "-mtp=soft",
         "-fPIE",
-        "-Wl,-Map,zig-out/" ++ name ++ ".map",
-        "-specs=" ++ devkitpro ++ "/libnx/switch.specs",
-        "zig-out/" ++ name ++ ".o",
-        "-L" ++ devkitpro ++ "/libnx/lib",
-        "-L" ++ devkitpro ++ "/portlibs/switch/lib",
-    } ++ flags ++ .{
+        b.fmt("-Wl,-Map,zig-out/{s}.map", .{name}),
+        b.fmt("-specs={s}/libnx/switch.specs", .{devkitpro}),
+        b.fmt("zig-out/{s}.o", .{name}),
+        b.fmt("-L{s}/libnx/lib", .{devkitpro}),
+        b.fmt("-L{s}/portlibs/switch/lib", .{devkitpro}),
+        "-lnx",
         "-o",
-        "zig-out/" ++ name ++ ".elf",
+        b.fmt("zig-out/{s}.elf", .{name}),
     }));
 
     const nro = b.addSystemCommand(&.{
-        devkitpro ++ "/tools/bin/elf2nro",
-        "zig-out/" ++ name ++ ".elf",
-        "zig-out/" ++ name ++ ".nro",
+        b.fmt("{s}/tools/bin/elf2nro", .{devkitpro}),
+        b.fmt("zig-out/{s}.elf", .{name}),
+        b.fmt("zig-out/{s}.nro", .{name}),
     });
 
     b.default_step.dependOn(&nro.step);
@@ -48,7 +46,7 @@ pub fn build(b: *std.build.Builder) void {
     elf.step.dependOn(&obj.step);
 
     const run_step = b.step("run", "Run in Ryujinx");
-    const ryujinx = b.addSystemCommand(&.{ "ryujinx", "zig-out/" ++ name ++ ".nro" });
+    const ryujinx = b.addSystemCommand(&.{ "Ryujinx", b.fmt("zig-out/{s}.nro", .{name}) });
     run_step.dependOn(&nro.step);
     run_step.dependOn(&ryujinx.step);
 }
