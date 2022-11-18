@@ -4,7 +4,7 @@
 git clone https://github.com/knarkzel/switch
 cd zig-switch
 nix develop
-zig build
+zig build run
 ```
 
 ## Resources
